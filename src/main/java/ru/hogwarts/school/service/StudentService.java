@@ -1,48 +1,41 @@
 package ru.hogwarts.school.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.hogwarts.school.model.Student;
+import ru.hogwarts.school.repository.StudentRepository;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
+import java.util.List;
 
 @Service
 public class StudentService {
-    private final Map<Long, Student> students = new HashMap<>();
-    private final AtomicLong counter = new AtomicLong(1);
 
-    public Student createStudent(Student student) {
-        student.setId(counter.getAndIncrement());
-        students.put(student.getId(), student);
-        return student;
+    private final StudentRepository studentRepository;
+
+    @Autowired
+    public StudentService(StudentRepository studentRepository) {
+        this.studentRepository = studentRepository;
     }
 
-    // Используем Optional, чтобы избежать возврата null (по критериям)
-    public Optional<Student> getStudent(Long id) {
-        return Optional.ofNullable(students.get(id));
+    public Student createStudent(Student student) {
+        return studentRepository.save(student);
+    }
+
+    public Student getStudent(Long id) {
+        return studentRepository.findById(id).orElse(null);
     }
 
     public Student updateStudent(Student student) {
-        if (students.containsKey(student.getId())) {
-            students.put(student.getId(), student);
-            return student;
-        }
-        return null; // По-хорошему тут нужна обработка ошибки, но пока оставим так
+        return studentRepository.save(student);
     }
 
     public void deleteStudent(Long id) {
-        students.remove(id);
+        studentRepository.deleteById(id);
     }
 
-    public Collection<Student> getAllStudents() {
-        return students.values();
+    public List<Student> getAllStudents() {
+        return studentRepository.findAll();
     }
 
-    // Фильтрация по возрасту
-    public List<Student> getStudentsByAge(int age) {
-        return students.values().stream()
-                .filter(s -> s.getAge() == age)
-                .collect(Collectors.toList());
-    }
+
 }
