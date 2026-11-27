@@ -1,50 +1,54 @@
 package ru.hogwarts.school.controller;
 
-import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.service.StudentService;
 
-import java.util.Collection;
 import java.util.List;
 
 @RestController
 @RequestMapping("/student")
 public class StudentController {
+
     private final StudentService studentService;
 
     public StudentController(StudentService studentService) {
         this.studentService = studentService;
     }
 
+    // Создание студента
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
     public Student createStudent(@RequestBody Student student) {
         return studentService.createStudent(student);
     }
 
+    // Получение студента по ID
     @GetMapping("/{id}")
-    public Student getStudent(@PathVariable Long id) {
-        return studentService.getStudent(id).orElseThrow(() -> new RuntimeException("Студент не найден"));
+    public ResponseEntity<Student> getStudent(@PathVariable Long id) {
+        Student student = studentService.getStudent(id);
+        if (student == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(student);
     }
 
+    // Обновление студента
     @PutMapping
     public Student updateStudent(@RequestBody Student student) {
         return studentService.updateStudent(student);
     }
 
+    // Удаление студента
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteStudent(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
         studentService.deleteStudent(id);
+        return ResponseEntity.ok().build();
     }
 
-
+    // Получение всех студентов (если нужно)
     @GetMapping
-    public Collection<Student> getStudents(@RequestParam(required = false) Integer age) {
-        if (age != null) {
-            return studentService.getStudentsByAge(age);
-        }
+    public List<Student> getAllStudents() {
         return studentService.getAllStudents();
     }
 }

@@ -1,49 +1,54 @@
 package ru.hogwarts.school.controller;
 
-import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.service.FacultyService;
 
-import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/faculty")
 public class FacultyController {
+
     private final FacultyService facultyService;
 
     public FacultyController(FacultyService facultyService) {
         this.facultyService = facultyService;
     }
 
+    // Создание факультета
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
     public Faculty createFaculty(@RequestBody Faculty faculty) {
         return facultyService.createFaculty(faculty);
     }
 
+    // Получение факультета по ID
     @GetMapping("/{id}")
-    public Faculty getFaculty(@PathVariable Long id) {
-        return facultyService.getFaculty(id).orElseThrow(() -> new RuntimeException("Факультет не найден"));
+    public ResponseEntity<Faculty> getFaculty(@PathVariable Long id) {
+        Faculty faculty = facultyService.getFaculty(id);
+        if (faculty == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(faculty);
     }
 
+    // Обновление факультета
     @PutMapping
     public Faculty updateFaculty(@RequestBody Faculty faculty) {
         return facultyService.updateFaculty(faculty);
     }
 
+    // Удаление факультета
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteFaculty(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteFaculty(@PathVariable Long id) {
         facultyService.deleteFaculty(id);
+        return ResponseEntity.ok().build();
     }
 
-
+    // Получение всех факультетов (если нужно)
     @GetMapping
-    public Collection<Faculty> getFaculties(@RequestParam(required = false) String color) {
-        if (color != null && !color.isBlank()) {
-            return facultyService.getFacultiesByColor(color);
-        }
+    public List<Faculty> getAllFaculties() {
         return facultyService.getAllFaculties();
     }
 }
